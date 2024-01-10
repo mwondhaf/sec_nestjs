@@ -12,10 +12,10 @@ import { AuthService } from './auth.service';
 import { MagicLoginStrategy } from './strategies/magiclogin.strategy';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt.guard';
-import { User } from '@prisma/client';
 // import { PasswordLessLoginDto } from './dto/passwordless-login.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 @ApiTags('Authentication')
