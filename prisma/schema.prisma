@@ -1,8 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
 }
 
 datasource db {
@@ -17,13 +18,141 @@ enum Role {
   SUPERVISOR
 }
 
-model User {
+enum EmployeeType {
+  INHOUSE
+  CONTRACTOR
+  OTHER
+}
+
+model otp {
   id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
+  email     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  isActive  Boolean  @default(true)
-  role      Role     @default(BASIC)
-  idNumber  String   @default("0")
+  expiresAt DateTime @default(now())
+}
+
+model User {
+  id               String        @default(cuid())
+  name             String?
+  email            String        @id @unique
+  password         String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  isActive         Boolean       @default(true)
+  role             Role          @default(BASIC)
+  employeeType     EmployeeType  @default(OTHER)
+  idNumber         String        @unique
+  UserProfile      UserProfile[]
+  company          Company?      @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId        String?
+  CompilerIncident Incident[]    @relation("compiled_by")
+  EditorIncident   Incident[]    @relation("edited_by")
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userEmail], references: [email], onDelete: Cascade)
+  userEmail String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entity    Entity?  @relation(fields: [entityId], references: [id], onDelete: Restrict)
+  entityId  String?
+
+  @@unique([userEmail, entityId])
+  @@map("user_profiles")
+}
+
+model Company {
+  id                   String  @id @default(cuid())
+  name                 String
+  workScope            String?
+  trade_license_number String  @unique
+  User                 User[]
+
+  @@map("company")
+}
+
+model Entity {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  code        String        @unique
+  makani      String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  UserProfile UserProfile[]
+  Incident    Incident[]
+}
+
+enum Severity {
+  Low
+  Medium
+  High
+}
+
+model Incident {
+  id                 String           @default(cuid())
+  referenceNumber    String           @id @unique @default(cuid())
+  severity           Severity         @default(Low)
+  description        String
+  investigation      String
+  location           String?
+  entity             Entity           @relation(fields: [entityId], references: [id])
+  compiler           User             @relation("compiled_by", fields: [compilerEmail], references: [email])
+  editor             User             @relation("edited_by", fields: [editorEmail], references: [email])
+  reporterName       String
+  reporterDepartment Department       @relation(fields: [departmentId], references: [id])
+  category           IncidentCategory @relation(fields: [incidentCategoryId], references: [id])
+  incidentTime       DateTime         @default(now())
+  incidentClosedTime DateTime         @default(now())
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  // peopleInvolved       PeopleInvolved[]
+  deleted            Boolean          @default(false)
+  incidentCategoryId String
+  entityId           String
+  departmentId       String
+  PeopleInvolved     PeopleInvolved[]
+  compilerEmail      String
+  editorEmail        String
+}
+
+model IncidentType {
+  id               String             @id @default(cuid())
+  name             String             @unique
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  IncidentCategory IncidentCategory[]
+}
+
+model IncidentCategory {
+  id             String       @id @default(cuid())
+  name           String       @unique
+  incidentType   IncidentType @relation(fields: [incidentTypeId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  incidentTypeId String
+  Incident       Incident[]
+}
+
+model Department {
+  id             String           @id @default(cuid())
+  name           String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Incident       Incident[]
+  PeopleInvolved PeopleInvolved[]
+}
+
+model PeopleInvolved {
+  id                      String     @id @default(cuid())
+  name                    String
+  identity_number         String?
+  nationality             String?
+  remarks                 String?
+  incident                Incident   @relation(fields: [incidentReferenceNumber], references: [referenceNumber])
+  person_category         Department @relation(fields: [departmentId], references: [id])
+  departmentId            String
+  incidentReferenceNumber String
 }

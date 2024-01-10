@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Incident" ALTER COLUMN "id" DROP DEFAULT,
+ALTER COLUMN "id" SET DATA TYPE TEXT;
+DROP SEQUENCE "Incident_id_seq";

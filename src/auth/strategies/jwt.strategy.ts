@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         JwtStrategy.cookieExtractor,
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
-      secretOrKey: 'secret', //TODO add to .env
+      secretOrKey: process.env.jwt_secret, //TODO add to .env
       ignoreExpiration: false,
     });
   }
@@ -27,8 +27,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: any): Promise<any> {
-    console.log({ payload });
-
     const result = await this.userService.getUserByEmail(payload.email);
     if (!result) {
       throw new UnauthorizedException();

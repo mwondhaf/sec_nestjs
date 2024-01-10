@@ -1,5 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { Injectable } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class MailingService {
@@ -33,21 +34,14 @@ export class MailingService {
   }
 
   async sendMagicLink(email: any, content?: string) {
-    console.log('sendinging email to', email);
-
     // const url = `${process.env.CLIENT_URL}?token=${token}`;
     // const html = this.confirmationTemplate({ name: user.firstName, url });
 
     const info = await this.transporter.sendMail({
       to: email,
-      subject: 'Welcome user! Confirm your Email',
+      subject: 'Welcome! Click link below to login',
       html: `<p>${content}</p>`,
     });
-
-    console.log({ info });
-
     return info;
   }
-
-  // Other email sending methods...
 }

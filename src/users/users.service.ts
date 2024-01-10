@@ -1,86 +1,55 @@
 import { Injectable } from '@nestjs/common';
-
-// interface User {
-//   id: string;
-//   name?: string;
-//   email: string;
-//   password?: string;
-// }
+import { Prisma, User } from '@prisma/client';
+import { DatabaseService } from 'src/database/database.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  private readonly users: any = [
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@mail.com',
-      password: 'password',
-    },
-    {
-      id: '2',
-      name: 'Jane Doe',
-      email: 'jane@mail.com',
-      password: 'password',
-    },
-    {
-      id: '3',
-      name: 'Francis M',
-      email: 'mwondhapps@gmail.com',
-      password: '',
-    },
-  ];
-  getUsers(): string {
-    return 'Users';
+  constructor(private readonly databaseService: DatabaseService) {}
+
+  async create(createUserDto: Prisma.UserCreateInput) {
+    const salt = await bcrypt.genSalt();
+    createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
+
+    return this.databaseService.user.create({
+      data: createUserDto,
+    });
   }
 
-  getUser(id: string): string {
-    return `User ${id}`;
-  }
-  getUserByEmail(email: string) {
-    return this.users.find((user) => user.email === email);
-  }
-
-  createUser(): string {
-    return 'Create User';
+  async findAll(query?: any) {
+    return this.databaseService.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { UserProfile: { include: { entity: true } }, company: true },
+    });
   }
 
-  updateUser(id: string): string {
-    return `Update User ${id}`;
+  // async findOne(id: string) {
+  //   return this.databaseService.user.findUnique({ where: { id } });
+  // }
+
+  async getUserByEmail(email: string) {
+    return this.databaseService.user.findUnique({
+      where: { email },
+      include: { UserProfile: { include: { entity: true } } },
+    });
   }
 
-  deleteUser(id: string): string {
-    return `Delete User ${id}`;
+  async getUserByIdNo(idNumber: string) {
+    return this.databaseService.user.findFirst({
+      where: { idNumber },
+      include: { UserProfile: { include: { entity: true } } },
+    });
   }
 
-  login(): string {
-    return 'Login';
+  async update(email: string, updateUserDto: Prisma.UserUpdateInput) {
+    return this.databaseService.user.update({
+      where: { email },
+      data: updateUserDto,
+    });
   }
 
-  logout(): string {
-    return 'Logout';
-  }
-
-  register(): string {
-    return 'Register';
-  }
-
-  forgotPassword(): string {
-    return 'Forgot Password';
-  }
-
-  resetPassword(): string {
-    return 'Reset Password';
-  }
-
-  changePassword(): string {
-    return 'Change Password';
-  }
-
-  verifyEmail(): string {
-    return 'Verify Email';
-  }
-
-  resendVerificationEmail(): string {
-    return 'Resend Verification Email';
+  async remove(email: string) {
+    return this.databaseService.user.deleteMany({ where: { email } });
   }
 }

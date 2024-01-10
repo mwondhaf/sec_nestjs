@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import Strategy from 'passport-magic-login';
 import { AuthService } from '../auth.service';
@@ -17,7 +17,11 @@ export class MagicLoginStrategy extends PassportStrategy(Strategy) {
       },
       callbackUrl: 'http://localhost:3000/login/email', //TODO this should be url of backend server
       sendMagicLink: async (destination, href) => {
-        await emailService.sendMagicLink(destination, href);
+        // validate user email before sending email
+        const user = await authService.validateUser(destination);
+        if (user) {
+          await emailService.sendMagicLink(destination, href);
+        }
       },
       verify: (payload, callback) => {
         callback(null, this.validate(payload));
