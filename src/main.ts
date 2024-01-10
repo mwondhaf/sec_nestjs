@@ -22,6 +22,6 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(3003);
+  await app.listen(process.env.PORT || 3003);
 }
 bootstrap();
