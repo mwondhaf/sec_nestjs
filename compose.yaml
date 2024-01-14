@@ -1,0 +1,9 @@
+services:
+  server:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: postgresql://postgres:2NIg3y4wXYVrJEaG@db.aqpmfxvvdfnfekueaufv.supabase.co:5432/postgres
+      jwt_secret: secret
+    ports:
+      - 3003:3003

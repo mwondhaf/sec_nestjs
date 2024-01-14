@@ -1,15 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { MagicLoginStrategy } from './strategies/magiclogin.strategy';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt.guard';
 // import { PasswordLessLoginDto } from './dto/passwordless-login.dto';
@@ -49,7 +39,6 @@ export class AuthController {
   // }
 
   // callback
-  @UseGuards(AuthGuard('magiclogin'))
   @Get('login/callback')
   callback(@Req() req: { user: User }) {
     let token = this.authService.generateToken(req.user);
